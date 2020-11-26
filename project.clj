@@ -11,6 +11,7 @@
                  [soda-ash "0.83.0"]
                  [aleph "0.4.6"]
                  [ring/ring-core "1.8.0"]
+                 [ring/ring-codec "1.1.2"]
                  [bidi "2.1.6"]]
   :plugins [[lein-cljsbuild "1.1.7"]]
   :main pullq.main

@@ -59,15 +59,6 @@
   (-> (res/response (pr-str @data))
       (res/header "content-type" "application/octet-stream")))
 
-(defn scheduled-pull
-  "A single pull of the data from github, as done by the periodic scheduler."
-  [auth config]
-  (log "Refreshing data from github")
-  (try
-    (reset! data (pull-queue auth config))
-    (catch Exception e (log e)))
-  (log "refresh done"))
-
 (defn handler
   "The routes handler for the web server.
 
@@ -77,6 +68,15 @@
   (make-handler ["/" [["data.edn" (partial data-handler auth config)]
                       ["" (->ResourcesMaybe {:prefix "public/"})]
                       ["" (->Redirect 301 "index.html")]]]))
+
+(defn scheduled-pull
+  "A single pull of the data from github, as done by the periodic scheduler."
+  [auth config]
+  (log "Refreshing data from github")
+  (try
+    (reset! data (pull-queue auth config))
+    (catch Exception e (log e)))
+  (log "refresh done"))
 
 (defn periodic-refresh
   "Periodically refresh the data from github."
@@ -88,8 +88,10 @@
   (let [[opts _ banner] (get-cli args)
         config          (read-config (:path opts))
         env-token       (System/getenv "GITHUB_TOKEN")
-        auth            {:oauth-token (or (:token opts) env-token)
-                         :per-page    100}
+        token           (or (:token opts) env-token)
+        ;auth            {:oauth-token (or (:token opts) env-token)
+        ;                 :per-page    100}
+        auth            {:headers {:authorization (format "Bearer %s" token)}}
         interval        (Integer/parseInt (:interval opts))
         port            (Integer/parseInt (:port opts))]
 
